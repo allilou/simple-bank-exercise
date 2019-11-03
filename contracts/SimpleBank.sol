@@ -71,46 +71,40 @@ contract SimpleBank {
     /// @return The users enrolled status
     // Emit the appropriate event
     function enroll() public returns (bool){
-        emit LogEnrolled(msg.sender);
         enrolled[msg.sender] = true;
-
+        emit LogEnrolled(msg.sender);
     }
 
     /// @notice Deposit ether into bank
     /// @return The balance of the user after the deposit is made
     // Add the appropriate keyword so that this function can receive ether
     // Use the appropriate global variables to get the transaction sender and value
-    // Emit the appropriate event    
+    // Emit the appropriate event
     // Users should be enrolled before they can make deposits
     function deposit() public payable returns (uint) {
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
-        require(enrolled[msg.sender] == true);
-
+        require(enrolled[msg.sender] == true, "Sender not enrolled");
         balances[msg.sender] += msg.value;
         emit LogDepositMade(msg.sender, balances[msg.sender]);
-
         return balances[msg.sender];
-
     }
 
     /// @notice Withdraw ether from bank
     /// @dev This does not return any excess ether sent to it
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
-    // Emit the appropriate event    
+    // Emit the appropriate event
     function withdraw(uint withdrawAmount) public payable returns (uint) {
         /* If the sender's balance is at least the amount they want to withdraw,
            Subtract the amount from the sender's balance, and try to send that amount of ether
-           to the user attempting to withdraw. 
+           to the user attempting to withdraw.
            return the user's balance.*/
-        require(enrolled[msg.sender] == true);
-        
-        require (balances[msg.sender] >= withdrawAmount);
-        
+        require(enrolled[msg.sender] == true, "Sender not enrolled");
+        require (balances[msg.sender] >= withdrawAmount, "Insuffisant funds");
         balances[msg.sender] -= withdrawAmount;
+        msg.sender.transfer(withdrawAmount);
         emit LogWithdrawal(msg.sender, withdrawAmount, balances[msg.sender]);
-        
         return  balances[msg.sender];
     }
 
